@@ -87,6 +87,7 @@
   @media (min-width: 500px) { .progress-step-label { display: block; } }
   .progress-step.active .progress-step-label { color: var(--cyan); }
   .progress-step.done .progress-step-label { color: var(--gray500); }
+  .progress-step:hover .progress-step-dot { border-color: var(--cyan); color: var(--cyan); }
 
   /* WIZARD PAGES */
   .wizard-page { display: none; animation: slideIn 0.2s ease; }
@@ -805,6 +806,8 @@ function updateProgress() {
     if (i < currentPage) cls += ' done';
     else if (i === currentPage) cls += ' active';
     el.className = cls;
+    el.style.cursor = 'pointer';
+    el.onclick = (function(step) { return function() { goTo(step); }; })(i);
     el.innerHTML = '<div class="progress-step-dot">' + (i < currentPage ? '&#10003;' : i) + '</div><div class="progress-step-label">' + labels[i-1] + '</div>';
   }
 }
