@@ -648,7 +648,7 @@ if ('serviceWorker' in navigator) {
     <div class="field-grid cols3">
       <div class="field"><label>Your Labor Rate ($/hr)</label><input type="number" id="laborRate" value="65" min="1"></div>
       <div class="field"><label>Markup on Materials (%)</label><input type="number" id="materialMarkup" value="20" min="0"></div>
-      <div class="field"><label>Profit Margin (%)</label><input type="number" id="profitMargin" value="25" min="0"></div>
+      <div class="field"><label>Target Margin — Internal (%)</label><input type="number" id="profitMargin" value="25" min="0"></div>
     </div>
 
     <div class="field-grid">
@@ -1045,8 +1045,7 @@ function generateProposal() {
     </tr>`;
   });
   const margin = e.total - e.subtotal;
-  tableHTML += `<tr class="subtotal"><td colspan="2">Subtotal</td><td>$${Math.round(e.subtotal).toLocaleString()}</td></tr>`;
-  tableHTML += `<tr><td colspan="2" style="color:var(--ink2);">Margin (${Math.round(e.profitMargin*100)}%)</td><td style="color:var(--ink2);">$${Math.round(margin).toLocaleString()}</td></tr>`;
+  // Margin is internal only — not shown on client proposal
   tableHTML += `<tr class="total"><td colspan="2">TOTAL</td><td>$${Math.round(e.total).toLocaleString()}</td></tr>`;
   document.getElementById('pLineItems').innerHTML = tableHTML;
 
@@ -1138,8 +1137,8 @@ function buildPDF() {
     var cells = tr.querySelectorAll('td'); if(!cells.length) return;
     var isTotal = tr.classList.contains('total');
     var isSub = tr.classList.contains('subtotal');
+    if(isSub) return; // internal only — skip subtotal and margin rows in PDF
     if(isTotal) { doc.line(margin, y-3, pageW-margin, y-3); doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(15,23,42); }
-    else if(isSub) { doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(15,23,42); }
     else { doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(71,85,105); }
     var texts = Array.from(cells).map(function(c){return c.textContent.trim();});
     if(texts.length === 2) {
@@ -1193,8 +1192,9 @@ function downloadPDF() {
   if(!window.jspdf) { exportPrintFallback(); return; }
   var doc = buildPDF();
   if(!doc) { exportPrintFallback(); return; }
-  var fn = (document.getElementById('clientName').value || 'proposal').toLowerCase().replace(/\s+/g,'-');
-  doc.save(fn + '-hettinger-proposal.pdf');
+  var clientRaw = document.getElementById('clientName').value || 'Client';
+  var fn = clientRaw + ' - Hettinger Painting Proposal';
+  doc.save(fn + '.pdf');
 }
 
 function shareProposal() {
@@ -1202,7 +1202,7 @@ function shareProposal() {
   var projectName = document.getElementById('projectName').value || 'Painting Project';
   var total = document.getElementById('eTotal').textContent;
   var deposit = document.getElementById('pDepositAmt').textContent;
-  var fn = clientName.toLowerCase().replace(/\s+/g,'-') + '-hettinger-proposal.pdf';
+  var fn = clientName + ' - Hettinger Painting Proposal.pdf';
 
   // Try to share as actual PDF file (works on iPhone iOS 15+)
   if (window.jspdf && navigator.share) {
