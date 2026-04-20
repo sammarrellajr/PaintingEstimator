@@ -830,16 +830,30 @@ function addRoom() {
 }
 
 function addPreset(name, w, l, h) {
-  addRoom();
-  var idx = roomCount;
-  var nameEl = document.getElementById('rName' + idx);
-  var wEl = document.getElementById('rW' + idx);
-  var lEl = document.getElementById('rL' + idx);
-  var hEl = document.getElementById('rH' + idx);
-  if (nameEl) nameEl.value = name;
-  if (wEl) wEl.value = w;
-  if (lEl) lEl.value = l;
-  if (hEl) hEl.value = h;
+  // Check if the first room exists and is completely empty
+  var firstEmpty = null;
+  for (var i = 1; i <= roomCount; i++) {
+    if (!document.getElementById('room-' + i)) continue;
+    var n = (document.getElementById('rName'+i)||{}).value || '';
+    var rw = (document.getElementById('rW'+i)||{}).value || '';
+    var rl = (document.getElementById('rL'+i)||{}).value || '';
+    if (!n && !rw && !rl) { firstEmpty = i; break; }
+  }
+
+  var idx;
+  if (firstEmpty !== null) {
+    // Fill the empty room in place
+    idx = firstEmpty;
+  } else {
+    // All rooms have data — add a new one
+    addRoom();
+    idx = roomCount;
+  }
+
+  if (document.getElementById('rName'+idx)) document.getElementById('rName'+idx).value = name;
+  if (document.getElementById('rW'+idx)) document.getElementById('rW'+idx).value = w;
+  if (document.getElementById('rL'+idx)) document.getElementById('rL'+idx).value = l;
+  if (document.getElementById('rH'+idx)) document.getElementById('rH'+idx).value = h;
   updateRoomSqFt(idx);
 }
 
